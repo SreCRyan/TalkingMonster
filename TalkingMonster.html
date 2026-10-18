@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Talking Monster V6 - Responsive</title>
+    <style>
+        /* --- RESPONSIVE VARIABLES --- */
+        :root {
+            --sky: #7ec8e3;
+            --table: #8B4513;
+            --monster: #D4E157;
+            --tv-purple: #6A5ACD;
+            
+            /* Default sizing (Mobile First) */
+            --monster-w: clamp(140px, 30vw, 180px);
+            --monster-h: clamp(190px, 40vw, 240px);
+            --eye-w: clamp(28px, 6vw, 35px);
+            --eye-h: clamp(36px, 7.5vw, 45px);
+            --eye-gap: clamp(10px, 3vw, 15px);
+            --mouth-w: clamp(50px, 12vw, 65px);
+            --mouth-h: clamp(35px, 8vw, 45px);
+            --nav-h: 80px;
+            --table-h: 15%;
+        }
+
+        /* Small height adjustment (Landscape phones) */
+        @media (max-height: 600px) {
+            :root {
+                --monster-w: 120px;
+                --monster-h: 160px;
+                --eye-w: 22px;
+                --eye-h: 28px;
+                --eye-gap: 8px;
+                --mouth-w: 40px;
+                --mouth-h: 25px;
+                --nav-h: 60px;
+                --table-h: 12%;
+            }
+        }
+
+        /* Desktop/Tablet sizing */
+        @media (min-width: 768px) and (min-height: 600px) {
+            :root {
+                --monster-w: 200px;
+                --monster-h: 280px;
+                --eye-w: 38px;
+                --eye-h: 50px;
+                --eye-gap: 18px;
+                --mouth-w: 70px;
+                --mouth-h: 50px;
+                --nav-h: 90px;
+            }
+        }
+
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            font-family: 'Comic Sans MS', 'Tahoma', sans-serif;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation; /* Prevents double-tap zoom */
+        }
+
+        body {
+            /* Nice gradient background for desktop viewing */
+            background: radial-gradient(circle at center, #2a2a2a 0%, #111 100%);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; height: 100dvh; overflow: hidden; transition: direction 0.3s;
+        }
+
+        body.rtl { direction: rtl; }
+
+        /* --- APP CONTAINER (Responsive) --- */
+        .app-container {
+            width: 100%; 
+            max-width: 800px; 
+            height: 100vh; 
+            height: 100dvh; 
+            max-height: 1000px;
+            background-color: var(--sky); 
+            position: relative; display: flex;
+            flex-direction: column; overflow: hidden; 
+            border: none;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            transition: border-radius 0.3s;
+        }
+
+        /* Add a nice frame on Desktop/Tablet */
+        @media (min-width: 768px) and (min-height: 600px) {
+            .app-container {
+                height: 90vh; 
+                height: 90dvh;
+                border: 4px solid #000;
+                border-radius: 30px;
+            }
+        }
+
+        /* --- TOP UI --- */
+        .top-ui {
+            position: absolute; top: 15px; right: 15px; display: flex; gap: 8px;
+            z-index: 50; font-weight: bold; font-size: clamp(14px, 2vw, 20px); align-items: center;
+            flex-wrap: wrap; justify-content: flex-end;
+            max-width: 60%;
+        }
+        body.rtl .top-ui { right: auto; left: 15px; justify-content: flex-start; }
+        
+        .stat-badge {
+            background: white; border: 3px solid black; border-radius: 20px;
+            padding: 5px 15px; box-shadow: 2px 2px 0px black; transition: transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .icon-btn {
+            background: white; border: 3px solid black; border-radius: 50%;
+            width: clamp(35px, 5vw, 45px); height: clamp(35px, 5vw, 45px); 
+            display: flex; justify-content: center; align-items: center;
+            font-size: clamp(16px, 2.5vw, 24px); cursor: pointer; box-shadow: 2px 2px 0px black; transition: transform 0.1s;
+        }
+        .icon-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* Language Slider */
+        .lang-slider {
+            display: flex; align-items: center; background: white; border: 3px solid black;
+            border-radius: 20px; padding: 2px; position: relative; cursor: pointer;
+            width: 110px; height: 36px; box-shadow: 2px 2px 0px black;
+            direction: ltr !important; flex-shrink: 0;
+        }
+        .slider-thumb {
+            position: absolute; width: 51px; height: 26px; background: #FFD700;
+            border-radius: 15px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            left: 2px; border: 2px solid black; z-index: 1;
+        }
+        .lang-slider.fa-active .slider-thumb { transform: translateX(51px); }
+        .slider-label { flex: 1; text-align: center; z-index: 2; font-size: 12px; font-weight: bold; transition: color 0.3s; pointer-events: none; }
+        .lang-slider .slider-label:nth-child(1) { color: black; }
+        .lang-slider.fa-active .slider-label:nth-child(1) { color: #888; }
+        .lang-slider .slider-label:nth-child(2) { color: #888; }
+        .lang-slider.fa-active .slider-label:nth-child(2) { color: black; }
+
+        /* --- TV --- */
+        .tv-wrapper {
+            position: absolute; top: 30px; left: 20px; z-index: 10;
+            animation: float 3s ease-in-out infinite; cursor: pointer;
+        }
+        body.rtl .tv-wrapper { left: auto; right: 20px; top: 80px; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .tv-antenna { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 4px; height: 25px; background: black; }
+        .tv-antenna::before, .tv-antenna::after { content: ''; position: absolute; top: -10px; width: 25px; height: 4px; background: black; }
+        .tv-antenna::before { left: -18px; transform: rotate(-30deg); }
+        .tv-antenna::after { right: -18px; transform: rotate(30deg); }
+        .tv-body { width: clamp(60px, 10vw, 80px); height: clamp(45px, 7.5vw, 60px); background: var(--tv-purple); border: 4px solid black; border-radius: 8px; display: flex; justify-content: center; align-items: center; box-shadow: 3px 3px 0px black; }
+        .tv-screen { width: 90%; height: 80%; background: white; border: 2px solid black; border-radius: 4px; display: flex; justify-content: center; align-items: center; overflow: hidden; font-size: clamp(8px, 1.5vw, 12px); font-weight: bold; text-align: center; color: black; }
+        
+        .channel-static { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.3"><rect width="100" height="100" fill="gray"/><circle cx="50" cy="50" r="40" fill="black"/></svg>'); animation: static-noise 0.2s infinite; }
+        .channel-sales { background: #FFD700; color: red; animation: flash 0.5s infinite; }
+        .channel-spamton { background: black; color: white; text-shadow: 2px 2px 0px red, -2px -2px 0px blue; animation: glitch 0.3s infinite; }
+        .channel-tenna { background: #00FF00; color: black; font-size: 10px; }
+        @keyframes static-noise { 0% { background-position: 0 0; } 100% { background-position: 10px 10px; } }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes glitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(-2px, -2px); } 60% { transform: translate(2px, 2px); } 80% { transform: translate(2px, -2px); } 100% { transform: translate(0); } }
+
+        /* --- MONSTER (Responsive) --- */
+        .monster-area { 
+            flex: 1; display: flex; justify-content: center; align-items: flex-end; 
+            padding-bottom: 10px; position: relative; 
+        }
+        .monster {
+            width: var(--monster-w); height: var(--monster-h); 
+            background: var(--monster);
+            background-size: 400% 400%;
+            border: 4px solid black; border-radius: 50% 50% 20% 20% / 60% 60% 10% 10%;
+            position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.1s; animation: breathe 3s infinite alternate ease-in-out;
+            box-shadow: inset -15px -15px 0px rgba(0,0,0,0.15);
+        }
+        .monster:active { transform: scale(0.95) !important; }
+        @keyframes breathe { 0% { transform: scaleY(1); } 100% { transform: scaleY(1.03) scaleX(1.01); } }
+        
+        .monster.rainbow-mode { animation: rainbow-bg 5s linear infinite, breathe 3s infinite alternate ease-in-out; }
+        @keyframes rainbow-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .monster.rgb-mode { animation: rgb-flash 2s linear infinite, breathe 3s infinite alternate ease-in-out; }
+        @keyframes rgb-flash { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+
+        .eyes { display: flex; gap: var(--eye-gap); margin-top: -10%; }
+        .eye { width: var(--eye-w); height: var(--eye-h); background: white; border: 3px solid black; border-radius: 50%; position: relative; overflow: hidden; }
+        .eye.left { transform: rotate(-5deg); }
+        .eye.right { transform: rotate(10deg); margin-top: 10px; }
+        .pupil { width: 30%; height: 30%; background: black; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: look-around 4s infinite; }
+        @keyframes look-around { 0%, 100% { transform: translate(-50%, -50%); } 25% { transform: translate(-20%, -50%); } 75% { transform: translate(-80%, -50%); } }
+        .eyelid { position: absolute; top: -5px; left: 0; width: 100%; height: 0%; background: var(--monster); border-bottom: 3px solid black; animation: blink 4s infinite; z-index: 2; }
+        .monster.rainbow-mode .eyelid, .monster.rgb-mode .eyelid { background: rgba(0,0,0,0.1); }
+        @keyframes blink { 0%, 90%, 100% { height: 0%; } 95% { height: 110%; } }
+        .mouth { width: var(--mouth-w); height: var(--mouth-h); background: #FF3D00; border-radius: 50%; margin-top: 10%; border: 3px solid black; transition: all 0.2s; }
+
+        /* --- TABLE & UI --- */
+        .table { height: var(--table-h); background-color: var(--table); border-top: 4px solid black; position: relative; z-index: 1; display: flex; justify-content: center; align-items: center; }
+        .hunger-bar { width: 80%; height: clamp(15px, 3vh, 20px); background: #555; border: 3px solid black; border-radius: 10px; position: absolute; top: -25px; overflow: hidden; }
+        .hunger-fill { height: 100%; width: 50%; background: #FF3D00; transition: width 0.3s; }
+        
+        .nav-bar { height: var(--nav-h); background-color: white; display: flex; justify-content: space-around; align-items: center; border-top: 4px solid black; z-index: 20; padding: 10px; gap: 10px; }
+        .nav-btn {
+            background: white; border: 4px solid #000; border-radius: 15px; padding: 5px;
+            font-size: clamp(14px, 2.5vw, 18px); font-weight: bold; cursor: pointer; width: 33%; height: 100%;
+            transition: transform 0.1s, background 0.2s; box-shadow: 0px 4px 0px #000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px;
+        }
+        .nav-btn:active { transform: translateY(4px); box-shadow: 0px 0px 0px #000; background: #eee; }
+        .nav-btn.mic-btn { background: #FFB6C1; }
+        .nav-btn.mic-btn.recording { background: red; color: white; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* --- SPEECH BUBBLE & ALERTS --- */
+        .speech-bubble { position: absolute; top: -80px; background: white; border: 4px solid black; border-radius: 20px; padding: 10px 20px; font-size: clamp(14px, 2.5vw, 18px); font-weight: bold; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(10px); pointer-events: none; white-space: nowrap; box-shadow: 3px 3px 0px black; z-index: 60; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); border-width: 15px 15px 0; border-style: solid; border-color: white transparent transparent transparent; }
+        .speech-bubble.show { opacity: 1; transform: translateY(0); }
+
+        .alert-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) scale(0.5); background: #FF3D00; color: white; font-size: clamp(18px, 4vw, 24px); font-weight: bold; padding: 15px 30px; border-radius: 20px; border: 5px solid black; box-shadow: 5px 5px 0px black; z-index: 200; opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; pointer-events: none; }
+        .alert-popup.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100; padding: 15px; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border: 4px solid black; border-radius: 15px; padding: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 5px 5px 0px black; max-height: 90vh; overflow-y: auto; }
+        .modal-content h2 { margin-bottom: 15px; font-size: clamp(20px, 4vw, 24px); }
+        
+        /* Shop Grid */
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .food-item { background: #f0f0f0; border: 3px solid black; border-radius: 10px; padding: 10px; cursor: pointer; transition: transform 0.1s; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .food-item:hover { transform: scale(1.05); background: #e0e0e0; }
+        .food-item:active { transform: scale(0.95); }
+        .food-emoji { font-size: clamp(30px, 6vw, 40px); }
+        .food-cost { font-size: clamp(12px, 2vw, 14px); background: gold; padding: 2px 8px; border-radius: 10px; border: 2px solid black; }
+
+        /* Color Grid */
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; justify-items: center; }
+        .color-swatch { width: clamp(50px, 12vw, 60px); height: clamp(50px, 12vw, 60px); border-radius: 50%; border: 4px solid black; cursor: pointer; transition: transform 0.2s; box-shadow: 2px 2px 0px black; }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch:active { transform: scale(0.9); box-shadow: none; }
+
+        .swatch-green { background: #D4E157; }
+        .swatch-blue { background: #4FC3F7; }
+        .swatch-pink { background: #F06292; }
+        .swatch-orange { background: #FFB74D; }
+        .swatch-purple { background: #BA68C8; }
+        .swatch-rainbow { background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet); background-size: 200% 200%; animation: rainbow-bg 3s linear infinite; }
+        .swatch-rgb { background: linear-gradient(45deg, red, lime, blue); animation: rgb-flash 1s infinite alternate; }
+
+        .close-btn { padding: 10px 20px; background: #FF3D00; color: white; border: 3px solid black; border-radius: 10px; font-size: clamp(16px, 3vw, 18px); font-weight: bold; cursor: pointer; box-shadow: 0px 4px 0px black; width: 100%; }
+        .close-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Falling Food */
+        .falling-food { position: absolute; font-size: clamp(30px, 6vw, 40px); z-index: 30; animation: drop 1s forwards cubic-bezier(0.5, 0, 1, 1); pointer-events: none; }
+        @keyframes drop { 0% { top: -50px; transform: scale(1) rotate(0deg); } 100% { top: 50%; transform: scale(0.5) rotate(180deg); opacity: 0; } }
+
+        /* --- MINIGAMES HUB --- */
+        .game-menu-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; background: #4CAF50; color: white; font-size: clamp(16px, 3vw, 18px); font-weight: bold; border: 3px solid black; border-radius: 10px; cursor: pointer; box-shadow: 0px 4px 0px black; text-shadow: 1px 1px 0px black; }
+        .game-menu-btn:active { transform: translateY(4px); box-shadow: none; }
+        .game-menu-btn:nth-child(2) { background: #2196F3; }
+        .game-menu-btn:nth-child(3) { background: #9C27B0; }
+        .game-screen { display: none; }
+        .game-screen.active { display: block; }
+
+        #game-area { height: clamp(150px, 25vh, 200px); position: relative; background: #eee; border: 3px dashed #999; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
+        .target { width: clamp(40px, 8vw, 50px); height: clamp(40px, 8vw, 50px); background: red; border-radius: 50%; position: absolute; cursor: pointer; border: 3px solid black; box-shadow: 2px 2px 0px black; transition: transform 0.1s; display: flex; justify-content: center; align-items: center; font-size: clamp(18px, 4vw, 24px); }
+
+        .coin { width: clamp(80px, 15vw, 100px); height: clamp(80px, 15vw, 100px); background: gold; border-radius: 50%; border: 5px solid #b8860b; margin: 20px auto; display: flex; justify-content: center; align-items: center; font-size: clamp(30px, 6vw, 40px); font-weight: bold; transition: transform 0.5s ease-out; }
+        .coin.flipping { transform: rotateY(1080deg); }
+        .bet-buttons { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .bet-btn { padding: 10px 20px; font-size: clamp(14px, 2.5vw, 16px); font-weight: bold; border: 3px solid black; border-radius: 10px; cursor: pointer; background: white; box-shadow: 0px 4px 0px black; }
+        .bet-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
+        .grid-box { background: #6A5ACD; border: 3px solid black; border-radius: 8px; height: clamp(50px, 10vh, 70px); display: flex; justify-content: center; align-items: center; font-size: clamp(24px, 5vw, 30px); cursor: pointer; transition: background 0.2s; }
+        .grid-box:active { transform: scale(0.9); }
+        .grid-box.revealed { background: #ddd; cursor: default; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="app">
+        
+        <!-- Top Stats -->
+        <div class="top-ui">
+            <button class="icon-btn" onclick="openColorMenu()" title="Colors">🎨</button>
+            
+            <div class="lang-slider" id="lang-slider" onclick="toggleLanguage()">
+                <div class="slider-thumb"></div>
+                <span class="slider-label">EN</span>
+                <span class="slider-label">FA</span>
+            </div>
+            
+            <div class="stat-badge" id="coin-badge">🪙 <span id="coin-count">10</span></div>
+        </div>
+
+        <!-- Alert Popup -->
+        <div class="alert-popup" id="alert-popup">Need more coins!</div>
+
+        <!-- The TV -->
+        <div class="tv-wrapper" onclick="changeChannel()">
+            <div class="tv-antenna"></div>
+            <div class="tv-body">
+                <div class="tv-screen" id="tv-screen">CLICK</div>
+            </div>
+        </div>
+
+        <!-- Monster Area -->
+        <div class="monster-area">
+            <div class="speech-bubble" id="bubble">Hello!</div>
+            <div class="monster" id="monster" onclick="petMonster()">
+                <div class="eyes">
+                    <div class="eye left"><div class="pupil"></div><div class="eyelid"></div></div>
+                    <div class="eye right"><div class="pupil"></div><div class="eyelid"></div></div>
+                </div>
+                <div class="mouth" id="mouth"></div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table">
+            <div class="hunger-bar">
+                <div class="hunger-fill" id="hunger-fill"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="nav-bar">
+            <button class="nav-btn" onclick="openShop()">🏪<span data-i18n="shop">Shop</span></button>
+            <button class="nav-btn mic-btn" id="btn-mic" onclick="startRecording()">🎤<span data-i18n="talk">Talk</span></button>
+            <button class="nav-btn" onclick="openGameMenu()">🎮<span data-i18n="play">Play</span></button>
+        </div>
+
+        <!-- SHOP MODAL -->
+        <div class="modal-overlay" id="shop-modal">
+            <div class="modal-content">
+                <h2 data-i18n="shopTitle">Monster Shop</h2>
+                <div class="shop-grid" id="shop-grid"></div>
+                <button class="close-btn" data-i18n="close" onclick="closeModals()">Close Shop</button>
+            </div>
+        </div>
+
+        <!-- COLOR MODAL -->
+        <div class="modal-overlay" id="color-modal">
+            <div class="modal-content">
+                <h2 data-i18n="colorTitle">Monster Colors</h2>
+                <div class="color-grid">
+                    <div class="color-swatch swatch-green" onclick="setMonsterColor('#D4E157', 'normal')"></div>
+                    <div class="color-swatch swatch-blue" onclick="setMonsterColor('#4FC3F7', 'normal')"></div>
+                    <div class="color-swatch swatch-pink" onclick="setMonsterColor('#F06292', 'normal')"></div>
+                    <div class="color-swatch swatch-orange" onclick="setMonsterColor('#FFB74D', 'normal')"></div>
+                    <div class="color-swatch swatch-purple" onclick="setMonsterColor('#BA68C8', 'normal')"></div>
+                    <div class="color-swatch swatch-rainbow" onclick="setMonsterColor('linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)', 'rainbow')"></div>
+                    <div class="color-swatch swatch-rgb" onclick="setMonsterColor('#D4E157', 'rgb')"></div>
+                </div>
+                <button class="close-btn" data-i18n="close" onclick="closeModals()">Close</button>
+            </div>
+        </div>
+
+        <!-- GAME MODAL -->
+        <div class="modal-overlay" id="game-modal">
+            <div class="modal-content">
+                <div id="game-menu" class="game-screen active">
+                    <h2 data-i18n="gameTitle">Minigames</h2>
+                    <p style="margin-bottom: 15px;" data-i18n="gameDesc">Win coins to buy food!</p>
+                    <button class="game-menu-btn" data-i18n="game1" onclick="startGame('target')">🎯 Tap Target</button>
+                    <button class="game-menu-btn" data-i18n="game2" onclick="startGame('flip')">🪙 Coin Flip</button>
+                    <button class="game-menu-btn" data-i18n="game3" onclick="startGame('grid')">💎 Treasure Grid</button>
+                    <button class="close-btn" data-i18n="back" onclick="closeModals()" style="margin-top: 10px;">Back to App</button>
+                </div>
+                <div id="game-target" class="game-screen">
+                    <h2 data-i18n="game1">Tap Target</h2>
+                    <div id="game-area"></div>
+                    <button class="close-btn" data-i18n="back" onclick="startGame('menu')">Back</button>
+                </div>
+                <div id="game-flip" class="game-screen">
+                    <h2 data-i18n="game2">Coin Flip</h2>
+                    <p style="margin-bottom:10px;" data-i18n="flipDesc">Cost: 1🪙. Win: 3🪙</p>
+                    <div class="coin" id="coin-display">?</div>
+                    <div class="bet-buttons">
+                        <button class="bet-btn" data-i18n="heads" onclick="flipCoin('Heads')">Heads</button>
+                        <button class="bet-btn" data-i18n="tails" onclick="flipCoin('Tails')">Tails</button>
+                    </div>
+                    <button class="close-btn" data-i18n="back" onclick="startGame('menu')">Back</button>
+                </div>
+                <div id="game-grid" class="game-screen">
+                    <h2 data-i18n="game3">Treasure Grid</h2>
+                    <p style="margin-bottom:10px;" data-i18n="gridDesc">Find the 💎! (Cost: 2🪙)</p>
+                    <div class="grid-container" id="grid-container"></div>
+                    <button class="close-btn" data-i18n="back" onclick="startGame('menu')">Back</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- I18N (TRANSLATIONS) ---
+        const i18n = {
+            en: {
+                shop: "Shop", talk: "Talk", play: "Play", shopTitle: "Monster Shop", close: "Close",
+                gameTitle: "Minigames", gameDesc: "Win coins to buy food!",
+                game1: "Tap Target", game2: "Coin Flip", game3: "Treasure Grid", back: "Back",
+                flipDesc: "Cost: 1🪙. Win: 3🪙", heads: "Heads", tails: "Tails", gridDesc: "Find the 💎! (Cost: 2🪙)",
+                outOfCoins: "You're out of coins!", notEnough: "Not enough coins!", need1: "Need 1 coin!",
+                need2: "Need 2 coins to play!", yum: "Yum!", win3: "You won 3 coins!", lost: "You lost!",
+                jackpot: "Jackpot! +5🪙", outOfTries: "Out of tries!", hungry: "Feed me!", pet: "Hehe!",
+                recording: "Listening...", micErr: "Mic access denied or not found!", tvClick: "CLICK",
+                mApple: "Apple", mDonut: "Donut", mBurger: "Burger", mPizza: "Pizza", mIceCream: "Ice Cream",
+                mChicken: "Chicken", mTaco: "Taco", mSushi: "Sushi", mCake: "Cake", mBroccoli: "Broccoli",
+                colorTitle: "Monster Colors"
+            },
+            fa: {
+                shop: "فروشگاه", talk: "صحبت", play: "بازی", shopTitle: "فروشگاه هیولا", close: "بستن",
+                gameTitle: "مینی گیم‌ها", gameDesc: "سکه ببرید و غذا بخرید!",
+                game1: "هدف را بزن", game2: "شیر یا خط", game3: "شبکه گنج", back: "بازگشت",
+                flipDesc: "هزینه: ۱🪙. برد: ۳🪙", heads: "شیر", tails: "خط", gridDesc: "الماس را پیدا کن! (هزینه: ۲🪙)",
+                outOfCoins: "سکه‌هایت تمام شد!", notEnough: "سکه کافی نداری!", need1: "۱ سکه لازم داری!",
+                need2: "برای بازی ۲ سکه لازم داری!", yum: "به به!", win3: "۳ سکه بردی!", lost: "باختی!",
+                jackpot: "جکپات! +۵🪙", outOfTries: "شانس‌هایت تمام شد!", hungry: "من را غذا بده!", pet: "هه‌هه!",
+                recording: "در حال گوش دادن...", micErr: "دسترسی به میکروفون داده نشد!", tvClick: "کلیک",
+                mApple: "سیب", mDonut: "دونات", mBurger: "همبرگر", mPizza: "پیتزا", mIceCream: "بستنی",
+                mChicken: "مرغ", mTaco: "تاکو", mSushi: "سوشی", mCake: "کیک", mBroccoli: "کلم بروکلی",
+                colorTitle: "رنگ‌های هیولا"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function toggleLanguage() {
+            playSound('click');
+            currentLang = currentLang === 'en' ? 'fa' : 'en';
+            
+            const slider = document.getElementById('lang-slider');
+            if (currentLang === 'fa') {
+                slider.classList.add('fa-active');
+                document.body.classList.add('rtl');
+            } else {
+                slider.classList.remove('fa-active');
+                document.body.classList.remove('rtl');
+            }
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[currentLang][key]) el.innerText = i18n[currentLang][key];
+            });
+            
+            renderShop(); 
+            document.getElementById('tv-screen').innerText = i18n[currentLang].tvClick;
+            showBubble(i18n[currentLang].pet);
+        }
+
+        // --- AUDIO ENGINE ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        document.body.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }, { once: true });
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            
+            if (type === 'click') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'eat') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                osc.frequency.setValueAtTime(400, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now);
+                osc.frequency.setValueAtTime(600, now + 0.1);
+                osc.frequency.setValueAtTime(800, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            }
+        }
+
+        // --- GAME STATE ---
+        let hunger = 50;
+        let coins = 10;
+        let isEating = false;
+        let isRecording = false;
+
+        // --- DOM ELEMENTS ---
+        const tvScreen = document.getElementById('tv-screen');
+        const bubble = document.getElementById('bubble');
+        const hungerFill = document.getElementById('hunger-fill');
+        const coinCount = document.getElementById('coin-count');
+        const coinBadge = document.getElementById('coin-badge');
+        const monster = document.getElementById('monster');
+        const mouth = document.getElementById('mouth');
+        const alertPopup = document.getElementById('alert-popup');
+        const micBtn = document.getElementById('btn-mic');
+
+        // --- UTILITIES ---
+        function showBubble(text) {
+            bubble.innerText = text;
+            bubble.classList.add('show');
+            setTimeout(() => { bubble.classList.remove('show'); }, 2000);
+        }
+
+        function showAlert(text) {
+            alertPopup.innerText = text;
+            alertPopup.classList.add('show');
+            playSound('lose');
+            coinBadge.style.transform = 'translateX(-5px)';
+            setTimeout(() => coinBadge.style.transform = 'translateX(5px)', 50);
+            setTimeout(() => coinBadge.style.transform = 'translateX(-5px)', 100);
+            setTimeout(() => coinBadge.style.transform = 'translateX(0)', 150);
+            setTimeout(() => { alertPopup.classList.remove('show'); }, 2000);
+        }
+
+        function updateCoins(amount) {
+            coins += amount;
+            if (coins < 0) coins = 0;
+            coinCount.innerText = coins;
+            coinBadge.style.transform = 'scale(1.2)';
+            setTimeout(() => coinBadge.style.transform = 'scale(1)', 150);
+        }
+
+        // --- COLOR LOGIC ---
+        function openColorMenu() {
+            playSound('click');
+            document.getElementById('color-modal').classList.add('active');
+        }
+
+        function setMonsterColor(color, mode) {
+            playSound('click');
+            monster.classList.remove('rainbow-mode', 'rgb-mode');
+            document.documentElement.style.setProperty('--monster', color);
+
+            if (mode === 'rainbow') {
+                monster.classList.add('rainbow-mode');
+            } else if (mode === 'rgb') {
+                monster.classList.add('rgb-mode');
+            }
+            closeModals();
+        }
+
+        // --- TV LOGIC ---
+        let channelIndex = 0;
+        const channels = [
+            { class: 'channel-static', text: 'STATIC' },
+            { class: 'channel-sales', text: 'BIG SALES!' },
+            { class: 'channel-spamton', text: 'SPAMTON' },
+            { class: 'channel-tenna', text: 'ANT TENNA' }
+        ];
+
+        function changeChannel() {
+            playSound('click');
+            tvScreen.className = 'tv-screen';
+            channelIndex = (channelIndex + 1) % channels.length;
+            void tvScreen.offsetWidth;
+            tvScreen.classList.add(channels[channelIndex].class);
+            tvScreen.innerText = channels[channelIndex].text;
+        }
+        setInterval(() => { changeChannel(); }, 5000);
+
+        // --- MONSTER LOGIC ---
+        function petMonster() {
+            if(isEating || isRecording) return;
+            playSound('click');
+            showBubble(i18n[currentLang].pet);
+            monster.style.animation = 'none';
+            monster.style.transform = 'scale(1.15, 0.85)';
+            setTimeout(() => {
+                monster.style.transform = 'scale(1)';
+                if (monster.classList.contains('rainbow-mode')) monster.style.animation = 'rainbow-bg 5s linear infinite, breathe 3s infinite alternate ease-in-out';
+                else if (monster.classList.contains('rgb-mode')) monster.style.animation = 'rgb-flash 2s linear infinite, breathe 3s infinite alternate ease-in-out';
+                else monster.style.animation = 'breathe 3s infinite alternate ease-in-out';
+            }, 150);
+        }
+
+        function updateHungerUI() {
+            hungerFill.style.width = hunger + '%';
+            if (hunger < 25) hungerFill.style.background = 'red';
+            else if (hunger < 60) hungerFill.style.background = 'orange';
+            else hungerFill.style.background = '#00FF00';
+        }
+
+        setInterval(() => {
+            if (hunger > 0) {
+                hunger -= 1;
+                updateHungerUI();
+            }
+        }, 10000);
+
+        // --- SHOP DATA & LOGIC ---
+        const foods = [
+            { id: 'apple', emoji: '🍎', nameKey: 'mApple', cost: 2, hunger: 10 },
+            { id: 'donut', emoji: '🍩', nameKey: 'mDonut', cost: 5, hunger: 25 },
+            { id: 'burger', emoji: '🍔', nameKey: 'mBurger', cost: 8, hunger: 40 },
+            { id: 'pizza', emoji: '🍕', nameKey: 'mPizza', cost: 12, hunger: 60 },
+            { id: 'icecream', emoji: '🍦', nameKey: 'mIceCream', cost: 15, hunger: 50 },
+            { id: 'chicken', emoji: '🍗', nameKey: 'mChicken', cost: 25, hunger: 100 },
+            { id: 'taco', emoji: '🌮', nameKey: 'mTaco', cost: 10, hunger: 45 },
+            { id: 'sushi', emoji: '🍣', nameKey: 'mSushi', cost: 18, hunger: 70 },
+            { id: 'cake', emoji: '🍰', nameKey: 'mCake', cost: 20, hunger: 80 },
+            { id: 'broccoli', emoji: '🥦', nameKey: 'mBroccoli', cost: 1, hunger: 5 }
+        ];
+
+        function renderShop() {
+            const grid = document.getElementById('shop-grid');
+            grid.innerHTML = '';
+            foods.forEach(food => {
+                const div = document.createElement('div');
+                div.className = 'food-item';
+                div.innerHTML = `
+                    <div class="food-emoji">${food.emoji}</div>
+                    <div>${i18n[currentLang][food.nameKey]}</div>
+                    <div class="food-cost">${food.cost} 🪙</div>
+                `;
+                div.onclick = () => buyFood(food);
+                grid.appendChild(div);
+            });
+        }
+
+        function openShop() {
+            playSound('click');
+            renderShop();
+            document.getElementById('shop-modal').classList.add('active');
+        }
+
+        function buyFood(food) {
+            if (coins < food.cost) {
+                showAlert(coins === 0 ? i18n[currentLang].outOfCoins : i18n[currentLang].notEnough);
+                return;
+            }
+            playSound('click');
+            updateCoins(-food.cost);
+            closeModals();
+            feedMonster(food.emoji, food.hunger);
+        }
+
+        function feedMonster(foodEmoji, hungerRestore) {
+            isEating = true;
+            const foodDiv = document.createElement('div');
+            foodDiv.className = 'falling-food';
+            foodDiv.innerText = foodEmoji;
+            foodDiv.style.left = '50%';
+            foodDiv.style.transform = 'translateX(-50%)';
+            document.getElementById('app').appendChild(foodDiv);
+
+            setTimeout(() => {
+                foodDiv.remove();
+                hunger = Math.min(100, hunger + hungerRestore);
+                updateHungerUI();
+                showBubble(i18n[currentLang].yum);
+                playSound('eat');
+                
+                let chewCount = 0;
+                const chewInterval = setInterval(() => {
+                    mouth.style.height = chewCount % 2 === 0 ? '20px' : 'var(--mouth-h)';
+                    mouth.style.width = chewCount % 2 === 0 ? '90%' : 'var(--mouth-w)';
+                    chewCount++;
+                    if (chewCount > 5) {
+                        clearInterval(chewInterval);
+                        mouth.style.height = 'var(--mouth-h)';
+                        mouth.style.width = 'var(--mouth-w)';
+                        isEating = false;
+                    }
+                }, 150);
+            }, 1000);
+        }
+
+        // --- MICROPHONE RECORDING LOGIC ---
+        let mediaRecorder;
+        let audioChunks = [];
+
+        async function startRecording() {
+            if (isRecording || isEating) return;
+            playSound('click');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showAlert(i18n[currentLang].micErr);
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const arrayBuffer = await audioBlob.arrayBuffer();
+                    
+                    audioCtx.decodeAudioData(arrayBuffer, (audioBuffer) => {
+                        const source = audioCtx.createBufferSource();
+                        source.buffer = audioBuffer;
+                        source.playbackRate.value = 1.8; 
+                        source.connect(audioCtx.destination);
+                        source.start(0);
+
+                        const playDuration = (audioBuffer.duration / 1.8) * 1000;
+                        let mouthInterval = setInterval(() => {
+                            mouth.style.height = mouth.style.height === '20px' ? 'var(--mouth-h)' : '20px';
+                        }, 150);
+
+                        setTimeout(() => {
+                            clearInterval(mouthInterval);
+                            mouth.style.height = 'var(--mouth-h)';
+                        }, playDuration);
+                    }, (err) => {
+                        console.error("Error decoding audio", err);
+                        showAlert("Audio error");
+                    });
+
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                micBtn.classList.add('recording');
+                micBtn.querySelector('span').innerText = i18n[currentLang].recording;
+                mouth.style.height = '20px'; 
+
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') { mediaRecorder.stop(); }
+                    isRecording = false;
+                    micBtn.classList.remove('recording');
+                    micBtn.querySelector('span').innerText = i18n[currentLang].talk;
+                    mouth.style.height = 'var(--mouth-h)';
+                }, 3000);
+
+            } catch (err) {
+                console.error(err);
+                showAlert(i18n[currentLang].micErr);
+                isRecording = false;
+                micBtn.classList.remove('recording');
+                micBtn.querySelector('span').innerText = i18n[currentLang].talk;
+            }
+        }
+
+        // --- MINIGAMES LOGIC ---
+        let gameInterval;
+        let gameTimeout;
+
+        function openGameMenu() {
+            playSound('click');
+            startGame('menu');
+            document.getElementById('game-modal').classList.add('active');
+        }
+
+        function startGame(gameId) {
+            playSound('click');
+            document.querySelectorAll('.game-screen').forEach(el => el.classList.remove('active'));
+            clearInterval(gameInterval);
+            clearTimeout(gameTimeout);
+
+            if (gameId === 'menu') {
+                document.getElementById('game-menu').classList.add('active');
+            } else if (gameId === 'target') {
+                document.getElementById('game-target').classList.add('active');
+                spawnTarget();
+            } else if (gameId === 'flip') {
+                document.getElementById('game-flip').classList.add('active');
+                document.getElementById('coin-display').innerText = '?';
+                document.getElementById('coin-display').className = 'coin';
+            } else if (gameId === 'grid') {
+                document.getElementById('game-grid').classList.add('active');
+                setupGrid();
+            }
+        }
+
+        function closeModals() {
+            playSound('click');
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            clearInterval(gameInterval);
+            clearTimeout(gameTimeout);
+        }
+
+        // --- Game 1: Tap Target ---
+        function spawnTarget() {
+            const area = document.getElementById('game-area');
+            area.innerHTML = '';
+            const target = document.createElement('div');
+            target.className = 'target';
+            target.innerText = '🎯';
+            
+            const maxX = area.clientWidth - target.clientWidth;
+            const maxY = area.clientHeight - target.clientHeight;
+            target.style.left = Math.max(0, Math.random() * maxX) + 'px';
+            target.style.top = Math.max(0, Math.random() * maxY) + 'px';
+
+            target.onclick = () => {
+                playSound('win');
+                updateCoins(1);
+                target.remove();
+                spawnTarget();
+            };
+
+            area.appendChild(target);
+            
+            clearTimeout(gameTimeout);
+            gameTimeout = setTimeout(() => {
+                target.remove();
+                spawnTarget();
+            }, 1500);
+        }
+
+        // --- Game 2: Coin Flip ---
+        function flipCoin(choice) {
+            if (coins < 1) {
+                showAlert(i18n[currentLang].need1);
+                return;
+            }
+            playSound('click');
+            updateCoins(-1);
+            
+            const coinEl = document.getElementById('coin-display');
+            coinEl.classList.add('flipping');
+            coinEl.innerText = '🪙';
+            
+            setTimeout(() => {
+                coinEl.classList.remove('flipping');
+                const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
+                coinEl.innerText = result === 'Heads' ? '👑' : '🦅';
+                
+                if (result === choice) {
+                    playSound('win');
+                    showBubble(i18n[currentLang].win3);
+                    updateCoins(3);
+                    coinEl.style.borderColor = '#4CAF50';
+                } else {
+                    playSound('lose');
+                    showBubble(i18n[currentLang].lost);
+                    coinEl.style.borderColor = 'red';
+                }
+                setTimeout(() => { coinEl.style.borderColor = '#b8860b'; }, 1000);
+            }, 600);
+        }
+
+        // --- Game 3: Treasure Grid ---
+        let treasureIndex = -1;
+        
+        function setupGrid() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            treasureIndex = Math.floor(Math.random() * 9);
+
+            for (let i = 0; i < 9; i++) {
+                const box = document.createElement('div');
+                box.className = 'grid-box';
+                box.innerText = '❓';
+                box.onclick = () => openBox(box, i);
+                container.appendChild(box);
+            }
+        }
+
+        function openBox(box, index) {
+            if (box.classList.contains('revealed')) return;
+            
+            if (coins < 2) {
+                showAlert(i18n[currentLang].need2);
+                return;
+            }
+
+            const isFirstClick = document.querySelectorAll('.grid-box.revealed').length === 0;
+            if (isFirstClick) { playSound('click'); updateCoins(-2); }
+
+            box.classList.add('revealed');
+
+            if (index === treasureIndex) {
+                playSound('win');
+                box.innerText = '💎';
+                box.style.background = '#4CAF50';
+                showBubble(i18n[currentLang].jackpot);
+                updateCoins(5);
+                
+                document.querySelectorAll('.grid-box').forEach((b, i) => {
+                    if (i !== treasureIndex) { b.innerText = '🕸️'; b.style.background = '#ddd'; }
+                });
+            } else {
+                playSound('lose');
+                box.innerText = '💣';
+                box.style.background = '#FF3D00';
+                
+                const revealedCount = document.querySelectorAll('.grid-box.revealed').length;
+                if (revealedCount === 8) {
+                    showBubble(i18n[currentLang].outOfTries);
+                    document.querySelectorAll('.grid-box').forEach((b, i) => {
+                        if (i === treasureIndex) { b.innerText = '💎'; b.style.background = '#4CAF50'; }
+                    });
+                }
+            }
+        }
+
+        // Initialize
+        updateHungerUI();
+        tvScreen.innerText = i18n[currentLang].tvClick;
+
+    </script>
+</body>
+</html>
